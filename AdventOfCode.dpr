@@ -1,4 +1,4 @@
-program AdventOfCode2024;
+program AdventOfCode;
 
 uses
   Vcl.Forms,
@@ -12,7 +12,9 @@ uses
   PriorityQueues.Detail in 'PriorityQueue\PriorityQueues.Detail.pas',
   AOCLetterReader in 'AOCLetterReader.pas',
   uAOCTimer in 'uAOCTimer.pas',
-  uAocGrid in 'uAocGrid.pas';
+  uAocGrid in 'uAocGrid.pas',
+  uAocManager in 'uAocManager.pas',
+  uAocTypes in 'uAocTypes.pas';
 
 begin
   Application.Initialize;

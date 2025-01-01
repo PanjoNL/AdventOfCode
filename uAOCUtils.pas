@@ -3,20 +3,18 @@ unit uAOCUtils;
 interface
 
 uses
-  System.SysUtils, System.Generics.Collections, AOCBase, RTTI, System.Classes, Math,
+  System.SysUtils, System.Generics.Collections, RTTI, System.Classes, Math,
   System.Net.HttpClient, System.Net.urlclient, system.Generics.Defaults, uAocConfig, vcl.Dialogs, system.uiTypes;
 
 type
-  TAdventOfCodeRef = class of TAdventOfCode;
   TAOCDirection = (North = 0, East, South, West, None);
   TAOCDirections = set of TAOCDirection;
+  AocYear = (_2024 = 2024);
 
 type AOCUtils = class
   public
-    class function GetAdventOfCode: TList<TAdventOfCodeRef>;
     class function DayIndexFromClassName(Const aClassName: String): String;
-    class procedure DoAdventOfCode(aAdventOfCodeRef: TAdventOfCodeRef; aConfig: TAOCConfig);
-    class procedure DownLoadPuzzleInput(var InputList: TStrings; Const DayIndex: String; Config: TAOCConfig; RefreshSessionCookie: Boolean = False);
+    class procedure DownLoadPuzzleInput(var InputList: TStrings; Const aYear: AocYear; Const DayIndex: String; Config: TAOCConfig; RefreshSessionCookie: Boolean = False);
     class function GetAocIniFilePath(Const aIniName: string): string;
 end;
 
@@ -94,37 +92,6 @@ implementation
 uses
   System.strUtils;
 
-class function AOCUtils.GetAdventOfCode: TList<TAdventOfCodeRef>;
-var
-  ctx: TRttiContext;
-  lType: TRttiType;
-  AdventOfCode: TAdventOfCodeRef;
-  Comparison: TComparison<TAdventOfCodeRef>;
-begin
-  result := TList<TAdventOfCodeRef>.Create;
-  ctx := TRttiContext.Create;
-  Writeln('Discovering advent of code');
-  for lType in ctx.GetTypes do
-    if (lType is TRttiInstanceType) and (TRttiInstanceType(lType).MetaclassType.InheritsFrom(TAdventOfCode))
-    then
-    begin
-      AdventOfCode := TAdventOfCodeRef(TRttiInstanceType(lType).MetaclassType);
-      if AdventOfCode.ClassName <> TAdventOfCode.ClassName then
-      begin
-        Writeln('Found '+ AdventOfCode.ClassName);
-        Result.Add(adventOfCode);
-      end;
-    end;
-
-  Comparison :=
-    function(const Left, Right: TAdventOfCodeRef): Integer
-    begin
-      Result := StrToInt(AOCUtils.DayIndexFromClassName(Left.ClassName)) -
-                StrToInt(AOCUtils.DayIndexFromClassName(Right.ClassName));
-    end;
-  Result.Sort(TComparer<TAdventOfCodeRef>.Construct(Comparison));
-end;
-
 class function AOCUtils.GetAocIniFilePath(const aIniName: string): string;
 begin
   Result := ParamStr(0);
@@ -143,25 +110,14 @@ begin
   Result := Copy(aClassName, i + 1, Length(aClassName) - i);
 end;
 
-class procedure AOCUtils.DoAdventOfCode(aAdventOfCodeRef: TAdventOfCodeRef; aConfig: TAOCConfig);
-var AdventOfCode: TAdventOfCode;
-begin
-  AdventOfCode := aAdventOfCodeRef.Create(aConfig);
-  try
-    AdventOfCode.Solve;
-  finally
-    AdventOfCode.Free;
-  end;
-end;
-
-class procedure AOCUtils.DownLoadPuzzleInput(var InputList: TStrings; Const DayIndex: String; Config: TAOCConfig; RefreshSessionCookie: Boolean = False);
+class procedure AOCUtils.DownLoadPuzzleInput(var InputList: TStrings; Const aYear: AocYear; Const DayIndex: String; Config: TAOCConfig; RefreshSessionCookie: Boolean = False);
 var HttpClient: THttpClient;
     lHeader: TNetHeader;
     Headers: TNetHeaders;
     HttpOutput: IHTTPResponse;
     Url, SessionCookie: string;
 begin
-  Url := Config.BaseUrl+'/day/'+DayIndex+'/input';
+  Url := Config.BaseUrl+'/' + ord(aYear).ToString + '/day/'+DayIndex+'/input';
   WriteLn('Downloading puzzle data from ' + Url);
 
   HttpClient := THTTPClient.Create;
@@ -192,7 +148,7 @@ begin
       if MessageDlg('Error conecting to AOC, delete session and try again?', mtError, mbYesNo, 0) = mrYes then
       begin
         Config.SessionCookie := '';
-        AOCUtils.DownLoadPuzzleInput(InputList, DayIndex, Config, True);
+        AOCUtils.DownLoadPuzzleInput(InputList, aYear, DayIndex, Config, True);
       end
     end
     else

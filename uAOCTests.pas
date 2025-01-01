@@ -4,11 +4,12 @@ interface
 
 uses
   System.SysUtils, Winapi.Windows, system.Classes,
-  uAocUtils, AocSolutions, AOCBase, uAOCConfig, uAocTimer;
+  uAocUtils, AocSolutions, AOCBase, uAOCConfig, uAocTimer, uAocTypes;
 
 type
   AOCTest = record
-    AOCClass: TAdventOfCodeRef;
+    Year: AocYear;
+    AOCClass: AocClass;
     ExpectedSolutionA, ExpectedSolutionB: String;
     LoadOverridenTestData: TLoadOverridenTestData
 end;
@@ -20,31 +21,31 @@ end;
 
 Const AOCTestData: array[0..24] of AOCTest =
 (
- (AOCClass: TAdventOfCodeDay1; ExpectedSolutionA: '3714264'; ExpectedSolutionB: '18805872'),
- (AOCClass: TAdventOfCodeDay2; ExpectedSolutionA: '670'; ExpectedSolutionB: '700'),
- (AOCClass: TAdventOfCodeDay3; ExpectedSolutionA: '173529487'; ExpectedSolutionB: '99532691'),
- (AOCClass: TAdventOfCodeDay4; ExpectedSolutionA: '2514'; ExpectedSolutionB: '1888'),
- (AOCClass: TAdventOfCodeDay5; ExpectedSolutionA: '5651'; ExpectedSolutionB: '4743'),
- (AOCClass: TAdventOfCodeDay6; ExpectedSolutionA: '5242'; ExpectedSolutionB: '1424'),
- (AOCClass: TAdventOfCodeDay7; ExpectedSolutionA: '5540634308362'; ExpectedSolutionB: '472290821152397'),
- (AOCClass: TAdventOfCodeDay8; ExpectedSolutionA: '359'; ExpectedSolutionB: '1293'),
- (AOCClass: TAdventOfCodeDay9; ExpectedSolutionA: '6398252054886'; ExpectedSolutionB: '6415666220005'),
- (AOCClass: TAdventOfCodeDay10;ExpectedSolutionA: '667'; ExpectedSolutionB: '1344'),
- (AOCClass: TAdventOfCodeDay11;ExpectedSolutionA: '216042'; ExpectedSolutionB: '255758646442399'),
- (AOCClass: TAdventOfCodeDay12;ExpectedSolutionA: '1375476'; ExpectedSolutionB: '821372'),
- (AOCClass: TAdventOfCodeDay13;ExpectedSolutionA: '29187'; ExpectedSolutionB: '99968222587852'),
- (AOCClass: TAdventOfCodeDay14;ExpectedSolutionA: '216027840'; ExpectedSolutionB: '6876'),
- (AOCClass: TAdventOfCodeDay15;ExpectedSolutionA: '1451928'; ExpectedSolutionB: '1462788'),
- (AOCClass: TAdventOfCodeDay16;ExpectedSolutionA: '94444'; ExpectedSolutionB: '502'),
- (AOCClass: TAdventOfCodeDay17;ExpectedSolutionA: '1,5,3,0,2,5,2,5,3'; ExpectedSolutionB: '108107566389757'),
- (AOCClass: TAdventOfCodeDay18;ExpectedSolutionA: '316'; ExpectedSolutionB: '45,18'),
- (AOCClass: TAdventOfCodeDay19;ExpectedSolutionA: '358'; ExpectedSolutionB: '600639829400603'),
- (AOCClass: TAdventOfCodeDay20;ExpectedSolutionA: '1426'; ExpectedSolutionB: '1000697'),
- (AOCClass: TAdventOfCodeDay21;ExpectedSolutionA: '155252'; ExpectedSolutionB: '195664513288128'),
- (AOCClass: TAdventOfCodeDay22;ExpectedSolutionA: '21147129593'; ExpectedSolutionB: '2445'),
- (AOCClass: TAdventOfCodeDay23;ExpectedSolutionA: '1370'; ExpectedSolutionB: 'am,au,be,cm,fo,ha,hh,im,nt,os,qz,rr,so'),
- (AOCClass: TAdventOfCodeDay24;ExpectedSolutionA: '69201640933606'; ExpectedSolutionB: 'dhq,hbs,jcp,kfp,pdg,z18,z22,z27'),
- (AOCClass: TAdventOfCodeDay25;ExpectedSolutionA: '3162'; ExpectedSolutionB: '')
+ (Year: _2024; AOCClass: TAdventOfCodeDay1; ExpectedSolutionA: '3714264'; ExpectedSolutionB: '18805872'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay2; ExpectedSolutionA: '670'; ExpectedSolutionB: '700'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay3; ExpectedSolutionA: '173529487'; ExpectedSolutionB: '99532691'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay4; ExpectedSolutionA: '2514'; ExpectedSolutionB: '1888'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay5; ExpectedSolutionA: '5651'; ExpectedSolutionB: '4743'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay6; ExpectedSolutionA: '5242'; ExpectedSolutionB: '1424'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay7; ExpectedSolutionA: '5540634308362'; ExpectedSolutionB: '472290821152397'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay8; ExpectedSolutionA: '359'; ExpectedSolutionB: '1293'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay9; ExpectedSolutionA: '6398252054886'; ExpectedSolutionB: '6415666220005'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay10;ExpectedSolutionA: '667'; ExpectedSolutionB: '1344'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay11;ExpectedSolutionA: '216042'; ExpectedSolutionB: '255758646442399'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay12;ExpectedSolutionA: '1375476'; ExpectedSolutionB: '821372'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay13;ExpectedSolutionA: '29187'; ExpectedSolutionB: '99968222587852'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay14;ExpectedSolutionA: '216027840'; ExpectedSolutionB: '6876'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay15;ExpectedSolutionA: '1451928'; ExpectedSolutionB: '1462788'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay16;ExpectedSolutionA: '94444'; ExpectedSolutionB: '502'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay17;ExpectedSolutionA: '1,5,3,0,2,5,2,5,3'; ExpectedSolutionB: '108107566389757'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay18;ExpectedSolutionA: '316'; ExpectedSolutionB: '45,18'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay19;ExpectedSolutionA: '358'; ExpectedSolutionB: '600639829400603'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay20;ExpectedSolutionA: '1426'; ExpectedSolutionB: '1000697'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay21;ExpectedSolutionA: '155252'; ExpectedSolutionB: '195664513288128'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay22;ExpectedSolutionA: '21147129593'; ExpectedSolutionB: '2445'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay23;ExpectedSolutionA: '1370'; ExpectedSolutionB: 'am,au,be,cm,fo,ha,hh,im,nt,os,qz,rr,so'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay24;ExpectedSolutionA: '69201640933606'; ExpectedSolutionB: 'dhq,hbs,jcp,kfp,pdg,z18,z22,z27'),
+ (Year: _2024; AOCClass: TAdventOfCodeDay25;ExpectedSolutionA: '3162'; ExpectedSolutionB: '')
 );
 
 implementation
@@ -78,7 +79,7 @@ begin
     begin
       Writeln(Format('Running tests for %s', [Test.AOCClass.ClassName]));
 
-      AdventOfCode := Test.AOCClass.Create(aConfig);
+      AdventOfCode := Test.AOCClass.Create(aConfig, Test.Year);
 
       TestTimer := AOCTimer.Start;
       AdventOfCode.Test(SolutionA, SolutionB, Test.LoadOverridenTestData);

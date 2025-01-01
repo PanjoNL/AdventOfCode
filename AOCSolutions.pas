@@ -10,7 +10,7 @@ uses
   System.StrUtils,
   System.Math, uAOCUtils, System.Types, PriorityQueues, System.Json,
   AocLetterReader, uAOCTimer, uAocGrid,
-  System.Threading, System.SyncObjs, system.Hash;
+  System.Threading, System.SyncObjs, system.Hash, uAocManager;
 
 type
   IntegerArray = Array Of Integer;
@@ -271,8 +271,6 @@ type
   end;
 
   TAdventOfCodeDay25 = class(TAdventOfCode)
-  private
-    function IntToChar(const aInt: Integer): char;
   protected
     function SolveA: Variant; override;
     function SolveB: Variant; override;
@@ -2962,172 +2960,13 @@ XOR
 end;
 {$ENDREGION}
 {$REGION 'TAdventOfCodeDay25'}
-function TAdventOfCodeDay25.IntToChar(const aInt: Integer): char;
-begin
-  if aInt = 0 then
-    Exit('.');
-  Result := IntToStr(aInt)[1];
-end;
-
 function TAdventOfCodeDay25.SolveA: Variant;
 var
   Keys, Locks: TList<IntegerArray>;
   Key, Lock, Template: IntegerArray;
   CanFit: Boolean;
   i, j: Int64;
-  Grid: TAocGrid<Integer>;
-
-  function GetPossible(const aCurrentX, aCurrentY: integer): TList<Integer>;
-  const KnightOffsetX: array[0..7] of integer = (1, 1, -1, -1, 2, 2, -2, -2);
-        KnightOffsetY: array[0..7] of integer = (2, -2, 2, -2, 1, -1, 1, -1);
-  var
-    i, TmpX, TmpY, x, y, i2: integer;
-  begin
-    if Grid.GetValue(aCurrentX, aCurrentY) <> 0 then
-      Writeln('Huh ', aCurrentX, ' ', aCurrentY);
-
-    Result := TList<Integer>.Create;
-
-    if (aCurrentX = 5) and (aCurrentY = 6) then
-      Result.Add(4)
-    else if (aCurrentX = 3) and (aCurrentY = 7) then
-      Result.Add(5)
-    else
-      for i := 1 to 9 do
-        Result.Add(i);
-
-    // Check rows
-    TmpX := aCurrentX;
-    while Grid.TryGetValue(Tmpx, aCurrentY, i) do
-    begin
-      Result.Remove(i);
-      Inc(TmpX);
-    end;
-
-    TmpX := aCurrentX;
-    while Grid.TryGetValue(Tmpx, aCurrentY, i) do
-    begin
-      Result.Remove(i);
-      Dec(TmpX);
-    end;
-
-    // Check Cols
-    TmpY := aCurrentY;
-    while Grid.TryGetValue(aCurrentX, TmpY, i) do
-    begin
-      Result.Remove(i);
-      Inc(TmpY);
-    end;
-
-    TmpY := aCurrentY;
-    while Grid.TryGetValue(aCurrentX, TmpY, i) do
-    begin
-      Result.Remove(i);
-      Dec(TmpY);
-    end;
-
-    // Check box
-    TmpX := (aCurrentX div 3) * 3;
-    TmpY := (aCurrentY div 3) * 3;
-    for x := 0 to 2 do
-      for y := 0 to 2 do
-      begin
-        i := Grid.GetValue(TmpX + x, TmpY + y);
-        Result.Remove(i);
-      end;
-
-    // Check Kings move
-    for x := -1 to 1 do
-      for y := -1 to 1 do
-      begin
-        if Grid.TryGetValue(aCurrentX + x, aCurrentY + y, i) then
-          Result.Remove(i);
-      end;
-
-    // Check Knight move
-    for i2 := 0 to 7 do
-      if Grid.TryGetValue(aCurrentX + KnightOffsetX[i2], aCurrentY + KnightOffsetY[i2], i) then
-        Result.Remove(i);
-
-    // Check Consec
-    if Grid.TryGetValue(aCurrentX + 1, aCurrentY, i) and (i > 0) then
-    begin
-      Result.Remove(i-1);
-      Result.Remove(i+1)
-    end;
-
-    if Grid.TryGetValue(aCurrentX - 1, aCurrentY, i) and (i > 0) then
-    begin
-      Result.Remove(i-1);
-      Result.Remove(i+1)
-    end;
-
-    if Grid.TryGetValue(aCurrentX, aCurrentY + 1, i) and (i > 0) then
-    begin
-      Result.Remove(i-1);
-      Result.Remove(i+1)
-    end;
-
-    if Grid.TryGetValue(aCurrentX, aCurrentY - 1, i) and (i > 0) then
-    begin
-      Result.Remove(i-1);
-      Result.Remove(i+1)
-    end;
-  end;
-
-
-  function Solve(aCurrentX, aCurrentY: integer): Boolean;
-  var
-    Possible: TList<integer>;
-    i, NextX, NextY: integer;
-    x, y: Integer;
-  begin
-    if aCurrentY = 9 then
-      Exit(True);
-
-    Possible := GetPossible(aCurrentX, aCurrentY);
-
-    NextX := aCurrentX + 1;
-    NextY := aCurrentY;
-    if NextX = 9 then
-    begin
-      NextX := 0;
-      NextY := NextY + 1;
-    end;
-
-    for i in Possible do
-    begin
-      Grid.SetData(aCurrentX, aCurrentY, i);
-      Result := Solve(NextX, NextY);
-      if Result and (aCurrentX = 0) and (aCurrentY = 0) then
-      begin
-        Grid.PrintToDebug;
-        for x := 0 to 8 do
-          for y := 0 to 8 do
-            Grid.SetData(x,y,0);
-
-      end
-      else if Result then
-        Exit;
-
-      Grid.SetData(aCurrentX, aCurrentY, 0);
-    end;
-
-    Result := Grid.GetValue(aCurrentX, aCurrentY) <> 0;
-  end;
-
-
 begin
-
-  Grid := TAocStaticGrid<Integer>.Create(9, 9, IntToChar);
-
-  Solve(0, 0);
-  Grid.PrintToDebug;
-
-
-  Exit(null);
-
-
   Keys := TList<IntegerArray>.Create;
   Locks := TList<IntegerArray>.Create;
 
@@ -3186,5 +3025,13 @@ RegisterClasses([
   TAdventOfCodeDay11,TAdventOfCodeDay12,TAdventOfCodeDay13,TAdventOfCodeDay14,TAdventOfCodeDay15,
   TAdventOfCodeDay16,TAdventOfCodeDay17,TAdventOfCodeDay18,TAdventOfCodeDay19,TAdventOfCodeDay20,
   TAdventOfCodeDay2, TAdventOfCodeDay22,TAdventOfCodeDay23,TAdventOfCodeDay24,TAdventOfCodeDay25]);
+
+TAocManager.RegisterAocClasses(_2024, [
+  TAdventOfCodeDay1, TAdventOfCodeDay2, TAdventOfCodeDay3, TAdventOfCodeDay4, TAdventOfCodeDay5,
+  TAdventOfCodeDay6, TAdventOfCodeDay7, TAdventOfCodeDay8, TAdventOfCodeDay9, TAdventOfCodeDay10,
+  TAdventOfCodeDay11,TAdventOfCodeDay12,TAdventOfCodeDay13,TAdventOfCodeDay14,TAdventOfCodeDay15,
+  TAdventOfCodeDay16,TAdventOfCodeDay17,TAdventOfCodeDay18,TAdventOfCodeDay19,TAdventOfCodeDay20,
+  TAdventOfCodeDay2, TAdventOfCodeDay22,TAdventOfCodeDay23,TAdventOfCodeDay24,TAdventOfCodeDay25]);
+
 
 end.

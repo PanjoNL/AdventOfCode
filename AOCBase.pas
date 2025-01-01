@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, system.Diagnostics, ClipBrd, system.UITypes,
-  uAocConfig, uAocTimer;
+  uAocConfig, uAocTimer, uAOCUtils;
 
 type
   TProcedureToRun = procedure of object;
@@ -13,7 +13,7 @@ type
   TLoadOverridenTestData = procedure(aInput: TStrings) of object;
 
 type TAdventOfCode = class(TPersistent)
-  constructor Create(aConfig: TAOCConfig);
+  constructor Create(aConfig: TAOCConfig; aYear: AocYear);
   destructor Destroy; override;
   protected
     FInput: TStrings;
@@ -25,6 +25,7 @@ type TAdventOfCode = class(TPersistent)
     procedure WriteTimeToDebug(Const aFunctionName: string; Const aTime: Int64);
   private
     FConfig: TAocConfig;
+    FYear: AocYear;
     function InputFilePath: string;
     function MakeFilePath(const aFolder, aFileName: String): string;
     function DayIndex: String;
@@ -40,17 +41,15 @@ type TAdventOfCode = class(TPersistent)
 
 implementation
 
-uses
-  uAOCUtils;
-
 function TAdventOfCode.DayIndex: String;
 begin
   Result := AOCUtils.DayIndexFromClassName(Self.ClassName);
 end;
 
-constructor TAdventOfCode.Create(aConfig: TAocConfig);
+constructor TAdventOfCode.Create(aConfig: TAocConfig; aYear: AocYear);
 begin
   FConfig := aConfig;
+  FYear := aYear;
   Assert(Self.ClassName.StartsWith('TAdventOfCodeDay'), 'Classname should begin with TAdventOfCodeDay, followd by the dayindex');
 
   FInput := TStringList.Create;
@@ -75,7 +74,7 @@ end;
 
 function TAdventOfCode.MakeFilePath(const aFolder, aFileName: String): string;
 begin
-  result := Format('%s\%s\%s%s.txt', [FConfig.BaseFilePath, aFolder, aFileName, DayIndex])
+  result := Format('%s\%d\%s\%s%s.txt', [FConfig.BaseFilePath, ord(FYear), aFolder, aFileName, DayIndex])
 end;
 
 function TAdventOfCode.SolveA: Variant;
@@ -129,7 +128,7 @@ begin
     FInput.LoadFromFile(FilePath)
   else
   begin
-    AOCUtils.DownLoadPuzzleInput(FInput, DayIndex, FConfig);
+    AOCUtils.DownLoadPuzzleInput(FInput, FYear, DayIndex, FConfig);
     FInput.SaveToFile(FilePath);
   end;
 end;
