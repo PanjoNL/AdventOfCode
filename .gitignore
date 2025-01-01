@@ -10,3 +10,6 @@
 *.local
 *.identcache
 *.cbk
+/2015/__history
+/2015/__recovery
+/2024/__history
