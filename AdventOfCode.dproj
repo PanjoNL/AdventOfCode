@@ -84,7 +84,10 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="AOCBase.pas"/>
-        <DCCReference Include="AOCSolutions.pas">
+        <DCCReference Include="2015\AOC2015Solutions.pas">
+            <Form>$R *.res</Form>
+        </DCCReference>
+        <DCCReference Include="2024\AOC2024Solutions.pas">
             <Form>$R *.res</Form>
         </DCCReference>
         <DCCReference Include="uAOCUtils.pas"/>

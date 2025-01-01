@@ -4,7 +4,11 @@ interface
 
 uses
   System.SysUtils, Winapi.Windows, system.Classes,
-  uAocUtils, AocSolutions, AOCBase, uAOCConfig, uAocTimer, uAocTypes;
+  uAocUtils, AOCBase, uAOCConfig, uAocTimer, uAocTypes,
+
+  AOC2015Solutions,
+  AOC2024Solutions
+  ;
 
 type
   AOCTest = record
@@ -19,8 +23,36 @@ public
   Class procedure RunTests(aConfig: TAOCConfig);
 end;
 
-Const AOCTestData: array[0..24] of AOCTest =
+Const AOCTestData: array[0..49] of AOCTest =
 (
+// 2015
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay1; ExpectedSolutionA: '74'; ExpectedSolutionB: '1795'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay2; ExpectedSolutionA: '1598415'; ExpectedSolutionB: '3812909'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay3; ExpectedSolutionA: '2081'; ExpectedSolutionB: '2341'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay4; ExpectedSolutionA: '282749'; ExpectedSolutionB: '9962624'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay5; ExpectedSolutionA: '255'; ExpectedSolutionB: '55'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay6; ExpectedSolutionA: '543903'; ExpectedSolutionB: '14687245'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay7; ExpectedSolutionA: '956'; ExpectedSolutionB: '40149'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay8; ExpectedSolutionA: '1371'; ExpectedSolutionB: '2117'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay9; ExpectedSolutionA: '207'; ExpectedSolutionB: '804'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay10; ExpectedSolutionA: '329356'; ExpectedSolutionB: '4666278'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay11; ExpectedSolutionA: 'hepxxyzz'; ExpectedSolutionB: 'heqaabcc'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay12; ExpectedSolutionA: '156366'; ExpectedSolutionB: '96852'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay13; ExpectedSolutionA: '733'; ExpectedSolutionB: '725'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay14; ExpectedSolutionA: '2696'; ExpectedSolutionB: '1084'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay15; ExpectedSolutionA: '21367368'; ExpectedSolutionB: '1766400'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay16; ExpectedSolutionA: '213'; ExpectedSolutionB: '323'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay17; ExpectedSolutionA: '1638'; ExpectedSolutionB: '17'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay18; ExpectedSolutionA: '768'; ExpectedSolutionB: '781'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay19; ExpectedSolutionA: '579'; ExpectedSolutionB: ''),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay20; ExpectedSolutionA: '831600'; ExpectedSolutionB: '884520'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay21; ExpectedSolutionA: '121'; ExpectedSolutionB: '201'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay22; ExpectedSolutionA: '1824'; ExpectedSolutionB: '1937'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay23; ExpectedSolutionA: '307'; ExpectedSolutionB: '160'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay24; ExpectedSolutionA: '11266889531'; ExpectedSolutionB: '77387711'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay25; ExpectedSolutionA: '9132360'; ExpectedSolutionB: ''),
+
+// 2024
  (Year: _2024; AOCClass: TAdventOfCodeDay1; ExpectedSolutionA: '3714264'; ExpectedSolutionB: '18805872'),
  (Year: _2024; AOCClass: TAdventOfCodeDay2; ExpectedSolutionA: '670'; ExpectedSolutionB: '700'),
  (Year: _2024; AOCClass: TAdventOfCodeDay3; ExpectedSolutionA: '173529487'; ExpectedSolutionB: '99532691'),

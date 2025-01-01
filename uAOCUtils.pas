@@ -9,7 +9,9 @@ uses
 type
   TAOCDirection = (North = 0, East, South, West, None);
   TAOCDirections = set of TAOCDirection;
-  AocYear = (_2024 = 2024);
+  AocYear = (
+    _2015 = 2015,
+    _2024 = 2024);
 
 type AOCUtils = class
   public

@@ -1,4 +1,4 @@
-unit AOCSolutions;
+unit AOC2024Solutions;
 
 interface
 
@@ -3009,6 +3009,9 @@ begin
       if CanFit then
         Result := Result + 1;
     end;
+
+  Keys.Free;
+  Locks.Free;
 end;
 
 function TAdventOfCodeDay25.SolveB: Variant;
@@ -3018,13 +3021,6 @@ end;
 {$ENDREGION}
 
 initialization
-
-RegisterClasses([
-  TAdventOfCodeDay1, TAdventOfCodeDay2, TAdventOfCodeDay3, TAdventOfCodeDay4, TAdventOfCodeDay5,
-  TAdventOfCodeDay6, TAdventOfCodeDay7, TAdventOfCodeDay8, TAdventOfCodeDay9, TAdventOfCodeDay10,
-  TAdventOfCodeDay11,TAdventOfCodeDay12,TAdventOfCodeDay13,TAdventOfCodeDay14,TAdventOfCodeDay15,
-  TAdventOfCodeDay16,TAdventOfCodeDay17,TAdventOfCodeDay18,TAdventOfCodeDay19,TAdventOfCodeDay20,
-  TAdventOfCodeDay2, TAdventOfCodeDay22,TAdventOfCodeDay23,TAdventOfCodeDay24,TAdventOfCodeDay25]);
 
 TAocManager.RegisterAocClasses(_2024, [
   TAdventOfCodeDay1, TAdventOfCodeDay2, TAdventOfCodeDay3, TAdventOfCodeDay4, TAdventOfCodeDay5,

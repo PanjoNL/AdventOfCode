@@ -11,6 +11,8 @@ type
     FImplementations: TDictionary<AocYear, AocArray>;
   public
     constructor Create;
+    destructor Destroy; override;
+
     class procedure RegisterAocClasses(year: AocYear; Classes: AocArray);
 
     function GetImplementations(year: AocYear): AocArray;
@@ -25,8 +27,13 @@ implementation
 constructor TAocManager.Create();
 begin
   inherited;
-
   FImplementations := TDictionary<AocYear, AocArray>.Create;
+end;
+
+destructor TAocManager.Destroy;
+begin
+  FImplementations.Free;
+  inherited;
 end;
 
 function TAocManager.GetImplementations(year: AocYear): AocArray;
@@ -42,4 +49,11 @@ begin
   AocManager.FImplementations.Add(year, Classes);
 end;
 
+initialization
+
+finalization
+  if Assigned(AocManager) then
+    AocManager.Free;
+
 end.
+
