@@ -87,9 +87,12 @@ type
   public
     class function CharToChar(const aChar: Char): Char;
     class function BoolToChar(const aBool: Boolean): Char;
+    class function CharToBool(const aChar: char): Boolean;
 
     class function CreateCharGrid(aStrings: TStrings; asDynamicGrid: boolean = false): TAocGrid<Char>;
     class function CreateIntegerGrid(aStrings: TStrings; asDynamicGrid: boolean = false): TAocGrid<Integer>;
+    class function CreateBoolGrid(aStrings: TStrings; asDynamicGrid: boolean = false): TAocGrid<Boolean>;
+
   end;
 
 implementation
@@ -195,6 +198,17 @@ end;
 
 { TAocGridHelper }
 
+class function TAocGridHelper.CreateBoolGrid(aStrings: TStrings; asDynamicGrid: boolean): TAocGrid<Boolean>;
+begin
+  if asDynamicGrid then
+  begin
+    Result := TAocDynamicGrid<Boolean>.create(aStrings, CharToBool, BoolToChar);
+    exit;
+  end;
+
+  Result := TAocStaticGrid<Boolean>.create(aStrings, CharToBool, BoolToChar);
+end;
+
 class function TAocGridHelper.CreateCharGrid(aStrings: TStrings; asDynamicGrid: boolean = false): TAocGrid<Char>;
 begin
   if asDynamicGrid then
@@ -222,6 +236,11 @@ begin
   Result := '.';
   if aBool then
     Result := '#';
+end;
+
+class function TAocGridHelper.CharToBool(const aChar: char): Boolean;
+begin
+  Result := aChar = '#';
 end;
 
 class function TAocGridHelper.CharToChar(const aChar: Char): Char;

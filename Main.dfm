@@ -48,4 +48,12 @@ object Form1: TForm1
     TabOrder = 3
     OnChange = cbbYearChange
   end
+  object chkMd5: TCheckBox
+    Left = 184
+    Top = 8
+    Width = 97
+    Height = 17
+    Caption = 'Md5 bruteforce'
+    TabOrder = 4
+  end
 end

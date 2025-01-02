@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Generics.Defaults, System.Generics.Collections,
   system.Diagnostics, AOCBase, RegularExpressions, System.DateUtils, system.StrUtils,
-  system.Math, uAOCUtils, system.Types, IdHashMessageDigest, System.Character, System.Json, uAocManager;
+  system.Math, uAOCUtils, system.Types, IdHashMessageDigest, System.Character, System.Json,
+  uAocManager, uAocGrid;
 
 type
   TAdventOfCodeDay1 = class(TAdventOfCode)
@@ -53,14 +54,14 @@ type
     function SolveB: Variant; override;
   end;
 
-  TLightEvent = procedure(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean) of object;
+  TLightEvent = procedure(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean) of object;
   TAdventOfCodeDay6 = class(TAdventOfCode)
   private
-    function SwitchLights(Const OnToggle, OnSwitch: TLightEvent): TDictionary<TPoint, Integer>;
-    procedure ToggleA(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
-    procedure SwitchA(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
-    procedure ToggleB(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
-    procedure SwitchB(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
+    function SwitchLights(Const OnToggle, OnSwitch: TLightEvent): integer;
+    procedure ToggleA(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean);
+    procedure SwitchA(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean);
+    procedure ToggleB(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean);
+    procedure SwitchB(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean);
   protected
     function SolveA: Variant; override;
     function SolveB: Variant; override;
@@ -68,7 +69,8 @@ type
 
   TAdventOfCodeDay7 = class(TAdventOfCode)
   private
-    function RunProgram(Const OverrideB: Word): Integer;
+    FirstProgramResult: Integer;
+    function RunProgram(Const OverrideB: Integer): Integer;
   protected
     function SolveA: Variant; override;
     function SolveB: Variant; override;
@@ -280,12 +282,12 @@ end;
 
 function TAdventOfCodeDay2.CalculateWrappingPaper(Const x,y,z: integer):integer;
 begin
-  Result := 2*x*y + 2*x*z + 2*y*z + Min(Min(x*y,x*z),y*z);
+  Result := 2*x*y + 2*x*z + 2*y*z + MinIntValue([x*y,x*z,y*z]);
 end;
 
 function TAdventOfCodeDay2.Calculateribbon(Const x,y,z: integer):integer;
 begin
-  Result := 2*(x+y+z-Max(Max(x,y),z)) + x*y*z;
+  Result := 2*(x+y+z-MaxIntValue([x,y,z])) + x*y*z;
 end;
 {$ENDREGION}
 {$Region 'TAdventOfCodeDay3'}
@@ -301,7 +303,7 @@ end;
 
 function TAdventOfCodeDay3.DeliverPresents(Const UseRoboSanta: Boolean): integer;
 var PositionSanta, PositionRobo, Temp: TPosition;
-    Seen: TDictionary<TPosition,integer>;
+    Seen: TDictionary<int64,integer>;
     c: char;
     IsSanta: Boolean;
 begin
@@ -309,23 +311,17 @@ begin
   PositionRobo := PositionRobo.Create(0,0);
 
   IsSanta := True;
-  Seen := TDictionary<TPosition,integer>.Create;
+  Seen := TDictionary<int64,integer>.Create;
   try
-  for c in FInput[0] do
+    for c in FInput[0] do
     begin
       if IsSanta then
         Temp := PositionSanta
       else
         Temp := PositionRobo;
 
-      Seen.AddOrSetValue(Temp, 1);
-
-      Case AnsiIndexStr(c,[ '^','>','v','<']) of
-        0: Temp := Temp.ApplyDirection(North);
-        1: Temp := Temp.ApplyDirection(East);
-        2: Temp := Temp.ApplyDirection(South);
-        3: Temp := Temp.ApplyDirection(West)
-      End;
+      Seen.AddOrSetValue(Temp.CacheKey, 1);
+      Temp.ApplyDirection(DirectionFromString(c));
 
       if IsSanta then
         PositionSanta := Temp
@@ -432,31 +428,22 @@ end;
 {$ENDREGION}
 {$Region 'TAdventOfCodeDay6'}
 function TAdventOfCodeDay6.SolveA: Variant;
-Var Lights: TDictionary<TPoint, integer>;
 begin
-  Lights := SwitchLights(ToggleA, SwitchA);
-  Result := Lights.Count; //543903
-  Lights.Free;
+  Result := SwitchLights(ToggleA, SwitchA);
 end;
 
 function TAdventOfCodeDay6.SolveB: Variant;
-Var Lights: TDictionary<TPoint, integer>;
-    i: integer;
 begin
-  Lights := SwitchLights(ToggleB, SwitchB);
-  Result := 0;
-  for i in Lights.Values do
-    Inc(Result, i); //14687245
-  Lights.Free;
-
+  Result := SwitchLights(ToggleB, SwitchB);
 end;
 
-function TAdventOfCodeDay6.SwitchLights(Const OnToggle, OnSwitch: TLightEvent): TDictionary<TPoint, Integer>;
+function TAdventOfCodeDay6.SwitchLights(Const OnToggle, OnSwitch: TLightEvent): integer;
+var
+  Lights: TAocGrid<integer>;
 
   procedure _InternalSwitchLights(aEvent: TLightEvent; aStart, aStop: string; aSwitchOn: Boolean);
   var split: TStringDynArray;
       x, x1, x2, y, y1, y2: integer;
-      Point: TPoint;
   begin
     split := SplitString(aStart, ',');
     x1 := StrToInt(Split[0]);
@@ -467,16 +454,16 @@ function TAdventOfCodeDay6.SwitchLights(Const OnToggle, OnSwitch: TLightEvent): 
 
     for x := x1 to x2 do
       for y := y1 to y2 do
-      begin
-        Point := TPoint.Create(x,y);
-        aEvent(Result, Point, aSwitchOn);
-      end;
+        aEvent(Lights, x, y, aSwitchOn);
   end;
 
-var s: String;
-    Split: TStringDynArray;
+var
+  s: String;
+  Split: TStringDynArray;
+  Light: TPair<TPosition,integer>;
 begin
-  Result := TDictionary<TPoint, Integer>.Create;
+  Lights := TAocStaticGrid<integer>.create(1000, 1000);
+
   for s in FInput do
   begin
     Split := SplitString(s, ' ');
@@ -487,111 +474,111 @@ begin
     else
       WriteLn('Unknown command: ', Split[0]);
   end;
+
+  Result := 0;
+  for Light in Lights do
+    Inc(Result, Light.Value);
+  Lights.Free;
 end;
 
-procedure TAdventOfCodeDay6.ToggleA(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
+
+procedure TAdventOfCodeDay6.SwitchA(Lights: TAocGrid<integer>; const x, y: integer; const SwitchOn: boolean);
 begin
-  if Lights.ContainsKey(aPoint) then
-    Lights.Remove(aPoint)
-  else
-    Lights.Add(aPoint, 1);
+    Lights.SetData(X,Y, IfThen(SwitchOn, 1, 0));
 end;
 
-procedure TAdventOfCodeDay6.SwitchA(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
+procedure TAdventOfCodeDay6.ToggleA(Lights: TAocGrid<integer>; const x, y: integer; const SwitchOn: boolean);
 begin
+  Lights.SetData(X,Y, IfThen(Lights.GetValue(x,y)= 0, 1, 0));
+end;
+
+procedure TAdventOfCodeDay6.ToggleB(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean);
+var
+  currentBrightness: integer;
+begin
+  currentBrightness := Lights.GetValue(x,y);
+  Lights.SetData(x, y, currentBrightness + 2);
+end;
+
+
+procedure TAdventOfCodeDay6.SwitchB(Lights: TAocGrid<integer>; Const x,y: integer; Const SwitchOn: boolean);
+var
+  currentBrightness: integer;
+begin
+  currentBrightness := Lights.GetValue(x, y);
   if SwitchOn then
-    Lights.AddOrSetValue(aPoint, 1)
+    Inc(currentBrightness)
   else
-    Lights.Remove(aPoint);
-end;
+    currentBrightness := Max(0, currentBrightness-1);
 
-procedure TAdventOfCodeDay6.ToggleB(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
-var i: integer;
-begin
-  Lights.TryGetValue(aPoint, i);
-  Lights.AddOrSetValue(aPoint, i+2);
-end;
-
-procedure TAdventOfCodeDay6.SwitchB(Lights: TDictionary<TPoint,Integer>; Const aPoint: TPoint; Const SwitchOn: boolean);
-var i: Integer;
-begin
-  Lights.TryGetValue(aPoint, i);
-  if SwitchOn then
-    Inc(i)
-  else
-    i := Max(0, i-1);
-
-  Lights.AddOrSetValue(aPoint, i);
+  Lights.SetData(x, y, currentBrightness);
 end;
 
 {$ENDREGION}
 {$Region 'TAdventOfCodeDay7'}
 function TAdventOfCodeDay7.SolveA: Variant;
 begin
-  Result := RunProgram(0); //956
+  FirstProgramResult := RunProgram(0); //956
+  Result := FirstProgramResult
 end;
 
 function TAdventOfCodeDay7.SolveB: Variant;
 begin
-  Result := RunProgram(RunProgram(0)); //40149
+  Result := RunProgram(FirstProgramResult); //40149
 end;
 
-function TAdventOfCodeDay7.RunProgram(Const OverrideB: Word): Integer;
-var Wires: TDictionary<String,Word>;
+function TAdventOfCodeDay7.RunProgram(Const OverrideB: Integer): Integer;
+var Wires: TDictionary<String,Integer>;
 
-  function TryGetWireValue(Const aInput: string; out Value: Word): Boolean;
-  var i: integer;
+  function TryGetWireValue(Const aInput: string; out Value: Integer): Boolean;
   begin
-    Result := (TryStrToInt(aInput, i) or Wires.TryGetValue(aInput, Value));
-    if Result and not Wires.ContainsKey(aInput) then
-      Value := i;
+    Result := TryStrToInt(aInput, value);
+    if Result then
+      Exit;
+
+    Result := Wires.TryGetValue(aInput, Value);
   end;
 
-Var Input: TList<String>;
-    s: string;
-    Split: TStringDynArray;
-    wrd1, wrd2: Word;
+Var
+  ToCalc: TQueue<string>;
+  s: string;
+  Split: TStringDynArray;
+  wrd1, wrd2: Integer;
 begin
-  Input := TList<string>.Create;
-  Wires := TDictionary<String,Word>.Create;
+  ToCalc := TQueue<string>.Create;
+  Wires := TDictionary<String,Integer>.Create;
 
   try
     for s in FInput do
-      Input.Add(s);
+      ToCalc.Enqueue(s);
 
-    while Input.Count > 0 do
+    while ToCalc.Count > 0 do
     begin
-      for s in Input do
+      s := ToCalc.Dequeue;
+      Split := SplitString(s, ' ');
+      if SameText(Split[1], 'AND') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
+        Wires.Add(Split[4], wrd1 and wrd2)
+      else if SameText(Split[1], 'OR') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
+        Wires.Add(Split[4], wrd1 or wrd2)
+      else if SameText(Split[1], 'LSHIFT') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
+        Wires.Add(Split[4], wrd1 shl wrd2)
+      else if SameText(Split[1], 'RSHIFT') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
+        Wires.Add(Split[4], wrd1 shr wrd2)
+      else if SameText(Split[0], 'NOT') and Wires.TryGetValue(Split[1], wrd1) then
+        Wires.Add(Split[3], Not wrd1)
+      else if SameText(Split[1], '->') and TryGetWireValue(Split[0], wrd1) then
       begin
-        Split := SplitString(s, ' ');
-        if SameText(Split[1], 'AND') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
-          Wires.Add(Split[4], wrd1 and wrd2)
-        else if SameText(Split[1], 'OR') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
-          Wires.Add(Split[4], wrd1 or wrd2)
-        else if SameText(Split[1], 'LSHIFT') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
-          Wires.Add(Split[4], wrd1 shl wrd2)
-        else if SameText(Split[1], 'RSHIFT') and TryGetWireValue(Split[0], wrd1) and TryGetWireValue(Split[2], wrd2) then
-          Wires.Add(Split[4], wrd1 shr wrd2)
-        else if SameText(Split[0], 'NOT') and Wires.TryGetValue(Split[1], wrd1) then
-          Wires.Add(Split[3], Not wrd1)
-        else if SameText(Split[1], '->') and TryGetWireValue(Split[0], wrd1) then
-        begin
-          if (Split[2] = 'b') and (OverrideB > 0) then
-            wrd1 := OverrideB;
+        if (Split[2] = 'b') and (OverrideB > 0) then
+          wrd1 := OverrideB;
 
-          Wires.Add(Split[2], wrd1);
-        end
-        else
-          Continue;
-
-        Input.Remove(s);
-      end;
+        Wires.Add(Split[2], wrd1);
+      end
+      else
+        ToCalc.Enqueue(s);
     end;
-
-
   finally
     Result := Wires['a'];
-    Input.Free;
+    ToCalc.Free;
     Wires.Free;
   end;
 end;
@@ -607,7 +594,7 @@ begin
     temps := StringReplace(temps, '\\', 'X', [rfReplaceAll]);
     temps := StringReplace(temps, '\"', 'X', [rfReplaceAll]);
     temps := StringReplace(temps, '"', '', [rfReplaceAll]);
-    Result := Result + Length(s) - Length(Temps) + OccurrencesOfChar(temps, '\x')*3 //1371
+    Result := Result + Length(s) - Length(Temps) + OccurrencesOfString(temps, '\x')*3 //1371
   end;
 end;
 
@@ -742,7 +729,6 @@ begin
 
   Result := Said;
 end;
-
 {$ENDREGION}
 {$Region 'TAdventOfCodeDay11'}
 function TAdventOfCodeDay11.SolveA: Variant;
@@ -809,17 +795,12 @@ function TAdventOfCodeDay11.FindNewPassWord(Const OldPassWord: String): string;
     end;
   end;
 
-var FirstTime: Boolean;
 begin
   Result := OldPassWord;
-  FirstTime := True;
-  while (not PassWordValid(Result)) or FirstTime do
-  begin
-    FirstTime := False;
+  repeat
     Result := NextPassWord(Result);
-  end;
+  until PassWordValid(Result);
 end;
-
 {$ENDREGION}
 {$Region 'TAdventOfCodeDay12'}
 function TAdventOfCodeDay12.SolveA: Variant;
@@ -834,7 +815,7 @@ end;
 
 function TAdventOfCodeDay12.CountNumbers(const CheckForRed: Boolean): Integer;
 
-   procedure Process(aJson: TJsonValue);
+  procedure Process(aJson: TJsonValue);
   var i: Integer;
       p: TJSONPair;
   begin
@@ -868,8 +849,6 @@ begin
   Process(Json);
   Json.Free;
 end;
-
-
 {$ENDREGION}
 {$Region 'TAdventOfCodeDay13'}
 procedure TAdventOfCodeDay13.BeforeSolve;
@@ -1075,9 +1054,9 @@ begin
 
   Result := 0;
   for i1 := 0 to 100 do
-    for i2 := 0 to 100 do
-      for i3 := 0 to 100 do
-        for i4 := 0 to 100 do
+    for i2 := 0 to 100-i1 do
+      for i3 := 0 to 100-i2 do
+        for i4 := 0 to 100-i3 do
         if (i1 + i2 + i3 + i4 = 100) then
         begin
           totalcapacity :=    Max(0, Ingredients[0].capacity*i1
@@ -1117,7 +1096,7 @@ end;
 
 function TAdventOfCodeDay16.SolveB: Variant;
 begin
-  Result := FindAunt(ValidatorB);//389 to high
+  Result := FindAunt(ValidatorB);
 end;
 
 function TAdventOfCodeDay16.FindAunt(const Validator: TValidator): String;
@@ -1242,58 +1221,43 @@ begin
 end;
 
 function TAdventOfCodeDay18.SwitchLights(Const StuckCorners: Boolean): integer;
-var LightGrid: TDictionary<TPoint, Boolean>;
+var LightGrid: TAocGrid<Boolean>;
 
-  function CountNeighbours(Const aPoint: TPoint): integer;
-  const DeltaX: array[0..7] of integer = (-1,-1,-1,0,0,1,1,1);
-  const DeltaY: array[0..7] of integer = (-1,0,1,-1,1,-1,0,1);
-  var Point: TPoint;
-      Val: Boolean;
-      i: integer;
+  function CountNeighbours(Const aPosition: TPosition): integer;
+  const
+    DeltaX: array[0..7] of integer = (-1,-1,-1,0,0,1,1,1);
+    DeltaY: array[0..7] of integer = (-1,0,1,-1,1,-1,0,1);
+  var
+    Val: Boolean;
+    i: integer;
   begin
     Result := 0;
     for i := Low(DeltaX) to High(DeltaX) do
     begin
-      Point := TPoint.Create(aPoint);
-      Point.Offset(DeltaX[i], DeltaY[i]);
-      LightGrid.TryGetValue(Point, val);
+      LightGrid.TryGetValue(aPosition.Clone.AddDelta(DeltaX[i], DeltaY[i]), val);
       if Val then
         Inc(Result);
+      if Result > 3 then
+        Exit;
     end;
   end;
 
   procedure StuckLights;
-
-    procedure Switch(x,y: integer);
-    var Point: TPoint;
-    begin
-      Point := TPoint.Create(x,y);
-      LightGrid[Point] := true;
-    end;
-
-  var Width: Integer;
   begin
-    Width := FInput.Count-1;
-    Switch(0, 0);
-    Switch(0, Width);
-    Switch(Width, 0);
-    Switch(Width, Width);
+    LightGrid.SetData(0, 0, true);
+    LightGrid.SetData(LightGrid.MaxX-1, 0, true);
+    LightGrid.SetData(0, LightGrid.MaxY-1, true);
+    LightGrid.SetData(LightGrid.MaxX-1, LightGrid.MaxY-1, true);
   end;
 
-var PendingChanges: TList<TPoint>;
-    Point: TPoint;
-    i,n,x,y: Integer;
-    b: boolean;
+var
+  PendingChanges: TList<TPosition>;
+  Light: TPair<TPosition, Boolean>;
+  Position: TPosition;
+  i,n: Integer;
 begin
-  PendingChanges := TList<TPoint>.Create;
-  LightGrid := TDictionary<TPoint, Boolean>.Create;
-
-  for y := 0 to FInput.Count - 1 do
-    for x := 0 to Length(FInput[0]) -1 do
-    begin
-      Point := TPoint.Create(x,y);
-      LightGrid.Add(Point, FInput[y][x+1]= '#');
-    end;
+  PendingChanges := TList<TPosition>.Create;
+  LightGrid := TAocGridHelper.CreateBoolGrid(FInput);
 
   for i := 1 to 100 do
   begin
@@ -1302,25 +1266,25 @@ begin
     if StuckCorners then
       StuckLights;
 
-    for Point in LightGrid.Keys do
+    for Light in LightGrid do
     begin
-      n := CountNeighbours(Point);
-      if LightGrid[Point] and (not (n in [2,3])) then
-        PendingChanges.Add(Point)
-      else if not LightGrid[Point] and (n = 3) then
-        PendingChanges.Add(Point);
+      n := CountNeighbours(Light.Key);
+      if Light.Value and (not (n in [2,3])) then
+        PendingChanges.Add(Light.Key)
+      else if not Light.Value and (n = 3) then
+        PendingChanges.Add(Light.Key);
     end;
 
-    for Point in PendingChanges do
-      LightGrid[point] := not LightGrid[Point];
+    for Position in PendingChanges do
+      LightGrid.SetData(Position, not LightGrid.GetValue(Position));
   end;
 
   if StuckCorners then
     StuckLights;
 
   result := 0;
-  for b in LightGrid.Values do
-    if b then
+  for Light in LightGrid do
+    if Light.Value then
       Inc(result);
 
   PendingChanges.Free;

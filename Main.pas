@@ -13,6 +13,7 @@ type
     cbbDay: TComboBox;
     btnTest: TButton;
     cbbYear: TComboBox;
+    chkMd5: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure btnSolveClick(Sender: TObject);
     procedure btnTestClick(Sender: TObject);
@@ -43,7 +44,7 @@ begin
   cbbYear.ItemIndex := cbbYear.Items.Count - 1;
   cbbYearChange(nil);
 
-  btnSolveClick(nil);
+//  btnSolveClick(nil);
 //  Application.Terminate;
   ReportMemoryLeaksOnShutdown := True;
 end;
@@ -74,8 +75,14 @@ begin
 end;
 
 procedure TForm1.btnTestClick(Sender: TObject);
+var
+  Properties: TSpecialProperties;
 begin
-  AOCTests.RunTests(FConfig);
+  Properties := [];
+  if chkMd5.Checked then
+    Include(Properties, TSpecialPropertie.Md5BruteForce);
+
+  AOCTests.RunTests(FConfig, Properties);
 end;
 
 procedure TForm1.cbbYearChange(Sender: TObject);

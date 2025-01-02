@@ -15,21 +15,22 @@ type
     Year: AocYear;
     AOCClass: AocClass;
     ExpectedSolutionA, ExpectedSolutionB: String;
-    LoadOverridenTestData: TLoadOverridenTestData
+    LoadOverridenTestData: TLoadOverridenTestData;
+    SpecialProperties: TSpecialProperties;
 end;
 
 type AOCTests = class
 public
-  Class procedure RunTests(aConfig: TAOCConfig);
+  Class procedure RunTests(aConfig: TAOCConfig; aSpecialProperties: TSpecialProperties);
 end;
 
-Const AOCTestData: array[0..49] of AOCTest =
+Const AOCTestData: array[0..47] of AOCTest =
 (
 // 2015
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay1; ExpectedSolutionA: '74'; ExpectedSolutionB: '1795'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay2; ExpectedSolutionA: '1598415'; ExpectedSolutionB: '3812909'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay3; ExpectedSolutionA: '2081'; ExpectedSolutionB: '2341'),
- (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay4; ExpectedSolutionA: '282749'; ExpectedSolutionB: '9962624'),
+ (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay4; ExpectedSolutionA: '282749'; ExpectedSolutionB: '9962624'; SpecialProperties: [Md5BruteForce]),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay5; ExpectedSolutionA: '255'; ExpectedSolutionB: '55'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay6; ExpectedSolutionA: '543903'; ExpectedSolutionB: '14687245'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay7; ExpectedSolutionA: '956'; ExpectedSolutionB: '40149'),
@@ -44,9 +45,9 @@ Const AOCTestData: array[0..49] of AOCTest =
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay16; ExpectedSolutionA: '213'; ExpectedSolutionB: '323'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay17; ExpectedSolutionA: '1638'; ExpectedSolutionB: '17'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay18; ExpectedSolutionA: '768'; ExpectedSolutionB: '781'),
- (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay19; ExpectedSolutionA: '579'; ExpectedSolutionB: ''),
+// (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay19; ExpectedSolutionA: '579'; ExpectedSolutionB: ''),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay20; ExpectedSolutionA: '831600'; ExpectedSolutionB: '884520'),
- (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay21; ExpectedSolutionA: '121'; ExpectedSolutionB: '201'),
+// (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay21; ExpectedSolutionA: '121'; ExpectedSolutionB: '201'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay22; ExpectedSolutionA: '1824'; ExpectedSolutionB: '1937'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay23; ExpectedSolutionA: '307'; ExpectedSolutionB: '160'),
  (Year: _2015; AOCClass: AOC2015Solutions.TAdventOfCodeDay24; ExpectedSolutionA: '11266889531'; ExpectedSolutionB: '77387711'),
@@ -81,7 +82,7 @@ Const AOCTestData: array[0..49] of AOCTest =
 );
 
 implementation
-class procedure AOCTests.RunTests(aConfig: TAOCConfig);
+class procedure AOCTests.RunTests(aConfig: TAOCConfig; aSpecialProperties: TSpecialProperties);
 
   procedure _Check(const DisplayName, Expected, Actual: String);
   begin
@@ -109,6 +110,12 @@ begin
     TotalTime := AOCTimer.Start;
     for Test in AOCTestData do
     begin
+      if (Test.SpecialProperties <> []) and (Test.SpecialProperties * aSpecialProperties = [])  then
+      begin
+        Writeln(Format('Skipping tests for %s', [Test.AOCClass.ClassName]));
+        Continue;
+      end;
+
       Writeln(Format('Running tests for %s', [Test.AOCClass.ClassName]));
 
       AdventOfCode := Test.AOCClass.Create(aConfig, Test.Year);

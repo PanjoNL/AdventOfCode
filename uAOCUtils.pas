@@ -7,8 +7,10 @@ uses
   System.Net.HttpClient, System.Net.urlclient, system.Generics.Defaults, uAocConfig, vcl.Dialogs, system.uiTypes;
 
 type
-  TAOCDirection = (North = 0, East, South, West, None);
+  TAOCDirection = (North = 0, East, South, West);
   TAOCDirections = set of TAOCDirection;
+  TSpecialPropertie = (Md5BruteForce);
+  TSpecialProperties = set of TSpecialPropertie;
   AocYear = (
     _2015 = 2015,
     _2024 = 2024);
@@ -56,11 +58,13 @@ type
 
 function GCD(Number1, Number2: int64): int64;
 function LCM(Number1, Number2: int64): int64;
-function OccurrencesOfChar(const S: string; const C: string): integer;
+function OccurrencesOfChar(const S: string; const C: char): integer;
+function OccurrencesOfString(const S: string; const C: string): integer;
 function BitStringToInt(Const aBit: string): int64;
 function IntToBits(aInt: int64): string;
 function CountTrueBits(aInt: integer): integer;
 function InRange(const aTarget, aLeft, aRight: int64): boolean; inline;
+function DirectionFromString(const aString: string): TAOCDirection;
 function RotateDirection(aDirection: TAOCDirection; aAmmount: integer): TAOCDirection;
 function IsNumber(aNumber: string): Boolean;
 function DeleteRepeatedSpaces(const s: string):string;
@@ -306,7 +310,7 @@ begin
   Result := Trunc(Number1 * Number2 / GCD(Number1, Number2));
 end;
 
-function OccurrencesOfChar(const S: string; const C: string): integer;
+function OccurrencesOfChar(const S: string; const C: char): integer;
 var
   i: Integer;
 begin
@@ -315,6 +319,24 @@ begin
     if S[i] = C then
       inc(result);
 end;
+
+function OccurrencesOfString(const S: string; const C: string): integer;
+var
+  i: Integer;
+begin
+  result := 0;
+
+  i := Pos(c, s);
+  if i = 0 then
+    exit;
+
+  while i > 0 do
+  begin
+    Inc(Result);
+    i := Pos(c, s, i+1);
+  end;
+end;
+
 
 function BitStringToInt(Const aBit: string): int64;
 var i: Integer;
@@ -357,6 +379,16 @@ end;
 function InRange(const aTarget, aLeft, aRight: int64): boolean;
 begin
   Result := (aTarget >= aLeft) and (aTarget <= aRight);
+end;
+
+function DirectionFromString(const aString: string): TAOCDirection;
+var
+  idx: integer;
+begin
+  idx := IndexStr(aString,[ '^','>','v','<']);
+  if idx < 0 then
+    raise Exception.Create('Unknown direction ' + aString);
+  Result := TAOCDirection(idx);
 end;
 
 function RotateDirection(aDirection: TAOCDirection; aAmmount: integer): TAOCDirection;
